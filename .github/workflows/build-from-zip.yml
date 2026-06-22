@@ -1,0 +1,44 @@
+name: Construir APK desde ZIP
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "NexoMarketingIA_cloudbuild_sin_pc.zip"
+      - ".github/workflows/build-from-zip.yml"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Descomprimir proyecto
+        run: unzip -o NexoMarketingIA_cloudbuild_sin_pc.zip
+
+      - name: Configurar Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Configurar Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Configurar Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.7
+
+      - name: Compilar APK Debug
+        run: |
+          cd NexoMarketingIA
+          gradle :app:assembleDebug --no-daemon
+
+      - name: Subir APK generado
+        uses: actions/upload-artifact@v4
+        with:
+          name: NexoMarketingIA-debug-apk
+          path: NexoMarketingIA/app/build/outputs/apk/debug/*.apk
